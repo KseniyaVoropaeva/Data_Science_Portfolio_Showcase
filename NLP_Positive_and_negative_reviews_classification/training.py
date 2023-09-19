@@ -28,7 +28,6 @@ df = df.drop(rows_to_drop)
 tfid = TfidfVectorizer()
 X = tfid.fit_transform(df['text'])
 
-# Збереження TfidfVectorizer у файл
 tfidf_filename = 'tfidf_vectorizer.pkl'
 joblib.dump(tfid, tfidf_filename)
 
@@ -38,43 +37,29 @@ y = label_encoder.fit_transform(df['sentiment'])
 
 X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
 
-# Визначте діапазон гіперпараметрів для пошуку
 param_grid = {
     'n_estimators': [100, 200, 300],
     'max_depth': [None, 10, 20, 30],
-    # Додайте інші гіперпараметри за потреби
 }
 
-# Створіть класифікатор Random Forest
 rf_classifier = RandomForestClassifier()
 
 
-# Вимірюйте використання пам'яті та час виконання
 memory_usage_before = memory_usage()
 start_time = timeit.default_timer()
 
-# Використовуйте GridSearchCV для пошуку оптимальних гіперпараметрів
 grid_search_rf = GridSearchCV(rf_classifier, param_grid, cv=5, scoring='balanced_accuracy')
 grid_search_rf.fit(X_train, y_train)
 
 end_time = timeit.default_timer()
 memory_usage_after = memory_usage()
 
-# Виведіть найкращі гіперпараметри та відповідні метрики
 print("Best Parameters for Random Forest:", grid_search_rf.best_params_)
 print("Best Balanced Accuracy:", grid_search_rf.best_score_)
-
-# Виведіть використання пам'яті та час виконання
 print("Memory Usage (MB):", max(memory_usage_after) - max(memory_usage_before))
 print("Execution Time (s):", end_time - start_time)
 
-
-
-
-# Зробіть передбачення на валідаційних даних
 y_pred = grid_search_rf.predict(X_val)
-
-# Виведіть метрики на валідаційних даних
 
 balanced_acc = balanced_accuracy_score(y_val, y_pred)
 precision = precision_score(y_val, y_pred, average='weighted')
@@ -86,8 +71,6 @@ print("Precision on Validation Data:", precision)
 print("Recall on Validation Data:", recall)
 print("F1-Score on Validation Data:", f1)
 
-
-# Збережіть отриману модель в ту саму папку
 model_filename = 'random_forest_model.pkl'
 joblib.dump(grid_search_rf.best_estimator_, model_filename)
 print("Model saved as", model_filename)
